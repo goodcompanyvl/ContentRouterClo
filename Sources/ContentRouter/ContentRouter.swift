@@ -103,6 +103,9 @@ public final class ContentRouterAppDelegate: NSObject, UIApplicationDelegate {
     private static var amplitudeAPIKey: String?
 
     public static func configure(oneSignalAppID: String?, amplitudeAPIKey: String?) {
+        print("[APP:AppDelegate] 🔧 Configuring analytics...")
+        print("[APP:AppDelegate] OneSignal: \(oneSignalAppID ?? "nil")")
+        print("[APP:AppDelegate] Amplitude: \(amplitudeAPIKey ?? "nil")")
         Self.oneSignalAppID = oneSignalAppID
         Self.amplitudeAPIKey = amplitudeAPIKey
     }
@@ -111,6 +114,10 @@ public final class ContentRouterAppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        print("[APP:AppDelegate] 🚀 didFinishLaunching called")
+        print("[APP:AppDelegate] OneSignal: \(Self.oneSignalAppID ?? "nil")")
+        print("[APP:AppDelegate] Amplitude: \(Self.amplitudeAPIKey ?? "nil")")
+        
         AnalyticsManager.shared
             .enable(launchOptions: launchOptions)
             .oneSignal(Self.oneSignalAppID)

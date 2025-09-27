@@ -53,6 +53,7 @@ public final class AnalyticsManager {
     private var launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     
     public func enable(launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> AnalyticsManager {
+        print("[APP:AnalyticsManager] 🚀 Enabling AnalyticsManager...")
         initializeIfNeeded()
         isEnabled = true
         self.launchOptions = launchOptions
