@@ -6,7 +6,7 @@ A powerful SwiftUI framework for intelligent content routing with built-in analy
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/goodcompanyvl/ContentRouterClo.git", from: "1.2.0")
+    .package(url: "https://github.com/goodcompanyvl/ContentRouterClo.git", from: "1.0.0")
 ]
 ```
 
