@@ -2,23 +2,61 @@ import SwiftUI
 import UIKit
 
 public struct ContentRouterScene<R: View>: Scene {
-    @UIApplicationDelegateAdaptor(ContentRouterAppDelegate.self) private var appDelegate
     private let root: R
+    private let oneSignalAppID: String?
+    private let amplitudeAPIKey: String?
 
     public init(
         oneSignalAppID: String? = nil,
         amplitudeAPIKey: String? = nil,
         @ViewBuilder root: () -> R
     ) {
+        self.oneSignalAppID = oneSignalAppID
+        self.amplitudeAPIKey = amplitudeAPIKey
         self.root = root()
-        ContentRouterAppDelegate.configure(
-            oneSignalAppID: oneSignalAppID,
-            amplitudeAPIKey: amplitudeAPIKey
-        )
     }
 
     public var body: some Scene {
-        WindowGroup { root }
+        WindowGroup { 
+            ContentRouterSceneView(
+                root: root,
+                oneSignalAppID: oneSignalAppID,
+                amplitudeAPIKey: amplitudeAPIKey
+            )
+        }
+    }
+    
+}
+
+private struct ContentRouterSceneView<R: View>: View {
+    @Environment(\.scenePhase) private var scenePhase
+    let root: R
+    let oneSignalAppID: String?
+    let amplitudeAPIKey: String?
+    @State private var hasInitialized = false
+    
+    var body: some View {
+        root
+            .onAppear {
+                if !hasInitialized {
+                    initializeAnalytics()
+                    hasInitialized = true
+                }
+            }
+            .onChange(of: scenePhase) { newPhase in
+                if newPhase == .active {
+                    AnalyticsManager.shared.refreshPushSubscription()
+                }
+            }
+    }
+    
+    private func initializeAnalytics() {
+        print("[APP:ContentRouterScene] 🚀 Initializing analytics...")
+        AnalyticsManager.shared
+            .enable(launchOptions: nil)
+            .oneSignal(oneSignalAppID)
+            .amplitude(amplitudeAPIKey)
+            .start()
     }
 }
 
@@ -98,35 +136,3 @@ public struct ContentRouter<LoaderContent: View, Content: View>: View {
     }
 }
 
-public final class ContentRouterAppDelegate: NSObject, UIApplicationDelegate {
-    private static var oneSignalAppID: String?
-    private static var amplitudeAPIKey: String?
-
-    public static func configure(oneSignalAppID: String?, amplitudeAPIKey: String?) {
-        print("[APP:AppDelegate] 🔧 Configuring analytics...")
-        print("[APP:AppDelegate] OneSignal: \(oneSignalAppID ?? "nil")")
-        print("[APP:AppDelegate] Amplitude: \(amplitudeAPIKey ?? "nil")")
-        Self.oneSignalAppID = oneSignalAppID
-        Self.amplitudeAPIKey = amplitudeAPIKey
-    }
-
-    public func application(
-        _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
-    ) -> Bool {
-        print("[APP:AppDelegate] 🚀 didFinishLaunching called")
-        print("[APP:AppDelegate] OneSignal: \(Self.oneSignalAppID ?? "nil")")
-        print("[APP:AppDelegate] Amplitude: \(Self.amplitudeAPIKey ?? "nil")")
-        
-        AnalyticsManager.shared
-            .enable(launchOptions: launchOptions)
-            .oneSignal(Self.oneSignalAppID)
-            .amplitude(Self.amplitudeAPIKey)
-            .start()
-        return true
-    }
-
-    public func applicationDidBecomeActive(_ application: UIApplication) {
-        AnalyticsManager.shared.refreshPushSubscription()
-    }
-}
