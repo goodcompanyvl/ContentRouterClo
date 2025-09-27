@@ -13,7 +13,7 @@ let package = Package(
             targets: ["ContentRouter"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/amplitude/Amplitude-Swift.git", branch: "main"),
+        .package(url: "https://github.com/amplitude/Amplitude-Swift.git", from: "1.15.0"),
         .package(url: "https://github.com/OneSignal/OneSignal-iOS-SDK.git", from: "5.2.14")
     ],
     targets: [
