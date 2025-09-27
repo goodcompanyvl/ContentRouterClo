@@ -15,7 +15,7 @@ internal final class ContentCoordinator: ObservableObject {
     
     @Published internal var displayMode: DisplayMode
     
-    private let contentSourceURL: String
+    internal let contentSourceURL: String
     internal let contentType: ContentType
     internal let contentIdentifier: String = AppConfig.contentSourceKey
     private let displayModeFlag: String = AppConfig.displayModeKey
