@@ -32,7 +32,7 @@ public struct ContentRouter<LoaderContent: View, Content: View>: View {
     public init(
         contentType: ContentType,
         contentSourceURL: String,
-        progressColor: Color = .white,
+        progressColor: Color,
         loaderContent: @escaping () -> LoaderContent,
         content: @escaping () -> Content
     ) {
@@ -94,31 +94,6 @@ public struct ContentRouter<LoaderContent: View, Content: View>: View {
             if newPhase == .active {
                 AnalyticsManager.shared.refreshPushSubscription()
             }
-        }
-    }
-}
-
-public extension ContentRouter {
-    static func withAnalytics<LoaderContent: View, Content: View>(
-        contentType: ContentType,
-        contentSourceURL: String,
-        oneSignalAppID: String? = nil,
-        amplitudeAPIKey: String? = nil,
-        progressColor: Color = .white,
-        loaderContent: @escaping () -> LoaderContent,
-        content: @escaping () -> Content
-    ) -> some View {
-        ContentRouterScene(
-            oneSignalAppID: oneSignalAppID,
-            amplitudeAPIKey: amplitudeAPIKey
-        ) {
-            ContentRouter(
-                contentType: contentType,
-                contentSourceURL: contentSourceURL,
-                progressColor: progressColor,
-                loaderContent: loaderContent,
-                content: content
-            )
         }
     }
 }

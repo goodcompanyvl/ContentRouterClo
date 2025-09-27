@@ -94,7 +94,7 @@ internal struct ContentRenderer: UIViewRepresentable {
                 var contentRequest = URLRequest(
                     url: contentURL,
                     cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
-                    timeoutInterval: 15
+                    timeoutInterval: AppConfig.networkTimeoutInterval
                 )
                 contentRequest.setValue(
                     AppConfig.securityEngineBrowserAgent,

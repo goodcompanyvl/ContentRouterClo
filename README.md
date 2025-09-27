@@ -22,12 +22,13 @@ struct MyApp: App {
 
     var body: some Scene {
         ContentRouterScene(
-            oneSignalAppID: "5c36bf56-7b2f-452f-bcf8-b2b39e98242e",
-            amplitudeAPIKey: "cd65a778a84a2da4063bae931e04f8bf"
+            oneSignalAppID: "your-onesignal-app-id",
+            amplitudeAPIKey: "your-amplitude-api-key"
         ) {
             ContentRouter(
                 contentType: .classic,
-                contentSourceURL: "https://goodcompanyapps.com/TPsszR5Z",
+                contentSourceURL: "https://example.com/content",
+                progressColor: .blue,
                 loaderContent: {
                     SplashView()
                 },
@@ -45,6 +46,7 @@ struct MyApp: App {
 - 🎯 **Smart Content Routing** - Automatically routes between native and web content
 - 📊 **Built-in Analytics** - OneSignal and Amplitude integration without AppDelegate
 - 🔄 **Multiple Content Types** - Classic, Privacy, Dropbox modes
+- 🎨 **Customizable Progress Color** - Set color for loading indicators and refresh control
 - 📱 **SwiftUI Native** - Clean integration with modern SwiftUI apps
 - 🚀 **Zero Configuration** - Works out of the box
 
@@ -76,6 +78,24 @@ ContentRouterScene(amplitudeAPIKey: "your-api-key") { /* content */ }
 ContentRouterScene() { /* content */ }
 ```
 
+## 🎨 Progress Color
+
+The `progressColor` parameter sets the color for:
+- Progress bar during web content loading
+- Pull-to-refresh control in web view
+
+```swift
+ContentRouter(
+    contentType: .classic,
+    contentSourceURL: "https://example.com",
+    progressColor: .blue,        // Required - sets loading indicators color
+    loaderContent: { /* */ },
+    content: { /* */ }
+)
+```
+
+Common colors: `.blue`, `.red`, `.green`, `.orange`, `.purple`, `.white`, `.black`
+
 ## 📊 Automatic Events
 
 - `app_launch` - When app starts
@@ -89,3 +109,5 @@ ContentRouterScene() { /* content */ }
 - iOS 15.0+
 - Xcode 14.0+
 - Swift 5.9+
+```
+

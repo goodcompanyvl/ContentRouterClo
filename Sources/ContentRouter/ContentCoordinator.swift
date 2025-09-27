@@ -335,7 +335,7 @@ internal final class ContentCoordinator: ObservableObject {
         
         var request = URLRequest(url: url)
         request.httpMethod = "HEAD"
-        request.timeoutInterval = 10.0 // 10 секунд таймаут
+        request.timeoutInterval = AppConfig.networkTimeoutInterval
         do {
             let (_, response) = try await URLSession.shared.data(for: request)
             if let httpResponse = response as? HTTPURLResponse {
@@ -398,8 +398,8 @@ internal final class ContentCoordinator: ObservableObject {
         }
         let store = RedirectStore()
         let config = URLSessionConfiguration.ephemeral
-        config.timeoutIntervalForRequest = 15
-        config.timeoutIntervalForResource = 15
+        config.timeoutIntervalForRequest = AppConfig.networkTimeoutInterval
+        config.timeoutIntervalForResource = AppConfig.networkTimeoutInterval
         let session = URLSession(configuration: config, delegate: store, delegateQueue: nil)
         do {
             let (_, response) = try await session.data(from: start)

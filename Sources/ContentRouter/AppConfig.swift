@@ -17,4 +17,5 @@ public enum AppConfig {
     public static let privacyValidatedOnceKey = "privacy_validated_once"
     public static let dropboxFailedKey = "dropbox_failed_once"
     public static let dropboxSavedURLKey = "dropbox_saved_url"
+    public static let networkTimeoutInterval: TimeInterval = 25.0
 }
