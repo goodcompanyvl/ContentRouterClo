@@ -226,6 +226,11 @@ public final class AnalyticsManager {
         initializeIfNeeded()
         
         #if canImport(OneSignalFramework)
+        guard oneSignalInitialized else {
+            print("[APP:AnalyticsManager] OneSignal not initialized - skipping push subscription refresh")
+            return
+        }
+        
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             let isAuthorized = settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional
             
