@@ -4,6 +4,7 @@ import UIKit
 public struct ContentRouter<LoaderContent: View, Content: View>: View {
     @StateObject private var coordinator: ContentCoordinator
     @Environment(\.scenePhase) private var scenePhase
+    @UIApplicationDelegateAdaptor(ContentRouterAppDelegate.self) private var appDelegate
     let loaderContent: () -> LoaderContent
     let content: () -> Content
     let progressColor: Color
@@ -119,23 +120,8 @@ public struct ContentRouter<LoaderContent: View, Content: View>: View {
             }
         }
         .onAppear {
-            initializeAnalyticsIfNeeded()
+            appDelegate.setAnalyticsConfig(oneSignalAppID: oneSignalAppID, amplitudeAPIKey: amplitudeAPIKey)
         }
-    }
-    
-    private func initializeAnalyticsIfNeeded() {
-        if oneSignalAppID != nil || amplitudeAPIKey != nil {
-            let launchOptions = getLaunchOptions()
-            AnalyticsManager.shared
-                .enable(launchOptions: launchOptions)
-                .oneSignal(oneSignalAppID)
-                .amplitude(amplitudeAPIKey)
-                .start()
-        }
-    }
-    
-    private func getLaunchOptions() -> [UIApplication.LaunchOptionsKey: Any]? {
-        return nil
     }
 }
 
@@ -162,5 +148,33 @@ public extension ContentRouter {
             oneSignalAppID: oneSignalAppID,
             amplitudeAPIKey: apiKey
         )
+    }
+}
+
+public class ContentRouterAppDelegate: NSObject, UIApplicationDelegate {
+    private var oneSignalAppID: String?
+    private var amplitudeAPIKey: String?
+    
+    public func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        if oneSignalAppID != nil || amplitudeAPIKey != nil {
+            AnalyticsManager.shared
+                .enable(launchOptions: launchOptions)
+                .oneSignal(oneSignalAppID)
+                .amplitude(amplitudeAPIKey)
+                .start()
+        }
+        return true
+    }
+    
+    public func applicationDidBecomeActive(_ application: UIApplication) {
+        AnalyticsManager.shared.refreshPushSubscription()
+    }
+    
+    internal func setAnalyticsConfig(oneSignalAppID: String?, amplitudeAPIKey: String?) {
+        self.oneSignalAppID = oneSignalAppID
+        self.amplitudeAPIKey = amplitudeAPIKey
     }
 }
