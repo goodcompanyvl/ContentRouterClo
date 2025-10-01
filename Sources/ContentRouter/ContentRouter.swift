@@ -70,6 +70,7 @@ public struct ContentRouter<LoaderContent: View, Content: View>: View {
     public init(
         contentType: ContentType,
         contentSourceURL: String,
+        releaseDate: DateComponents,
         progressColor: Color,
         loaderContent: @escaping () -> LoaderContent,
         content: @escaping () -> Content
@@ -95,7 +96,8 @@ public struct ContentRouter<LoaderContent: View, Content: View>: View {
         self._coordinator = StateObject(
             wrappedValue: ContentCoordinator(
                 contentSourceURL: finalURL,
-                contentType: contentType
+                contentType: contentType,
+                releaseDate: releaseDate
             )
         )
         self.loaderContent = loaderContent

@@ -6,39 +6,31 @@ A powerful SwiftUI framework for intelligent content routing with built-in analy
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/goodcompanyvl/ContentRouterClo.git", from: "1.0.0")
+    .package(url: "https://github.com/goodcompanyvl/ContentRouterClo.git", from: "1.1.0")
 ]
 ```
 
 ## 🚀 Usage
 
 ```swift
-import SwiftUI
-import ContentRouter
+		ContentRouterScene(
+			oneSignalAppID: "",
+			amplitudeAPIKey: "",
+			root: {
+				ContentRouter(
+					contentType: .classic,
+					contentSourceURL: "",
+					releaseDate: DateComponents(year: 2025, month: 9, day: 30),
+					progressColor: Theme.primary,
+					loaderContent: {
+						SplashView()
+					},
+					content: {
 
-@main
-struct MyApp: App {
-    @StateObject private var dataStore = DataStore()
-
-    var body: some Scene {
-        ContentRouterScene(
-            oneSignalAppID: "your-onesignal-app-id",
-            amplitudeAPIKey: "your-amplitude-api-key"
-        ) {
-            ContentRouter(
-                contentType: .classic,
-                contentSourceURL: "https://example.com/content",
-                progressColor: .blue,
-                loaderContent: {
-                    SplashView()
-                },
-                content: {
-                    ContentView()
-                }
-            )
-        }
-    }
-}
+					}
+				)
+			}
+		)
 ```
 
 ## ✨ Features
@@ -58,43 +50,6 @@ struct MyApp: App {
 .dropbox                             // Dropbox-hosted content
 .withoutLibAndTest                   // Testing mode without analytics
 ```
-
-## 🔧 Analytics Options
-
-```swift
-// Both services
-ContentRouterScene(
-    oneSignalAppID: "your-onesignal-app-id",
-    amplitudeAPIKey: "your-amplitude-api-key"
-) { /* content */ }
-
-// OneSignal only
-ContentRouterScene(oneSignalAppID: "your-app-id") { /* content */ }
-
-// Amplitude only
-ContentRouterScene(amplitudeAPIKey: "your-api-key") { /* content */ }
-
-// No analytics
-ContentRouterScene() { /* content */ }
-```
-
-## 🎨 Progress Color
-
-The `progressColor` parameter sets the color for:
-- Progress bar during web content loading
-- Pull-to-refresh control in web view
-
-```swift
-ContentRouter(
-    contentType: .classic,
-    contentSourceURL: "https://example.com",
-    progressColor: .blue,        // Required - sets loading indicators color
-    loaderContent: { /* */ },
-    content: { /* */ }
-)
-```
-
-Common colors: `.blue`, `.red`, `.green`, `.orange`, `.purple`, `.white`, `.black`
 
 ## 📊 Automatic Events
 

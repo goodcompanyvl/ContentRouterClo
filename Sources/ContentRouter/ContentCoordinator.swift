@@ -20,13 +20,16 @@ internal final class ContentCoordinator: ObservableObject {
     internal let contentIdentifier: String = AppConfig.contentSourceKey
     private let displayModeFlag: String = AppConfig.displayModeKey
     private let accessCountKey = AppConfig.accessCountKey
+    private let releaseDate: DateComponents
 
     internal init(
         contentSourceURL: String,
-        contentType: ContentType = .dropbox
+        contentType: ContentType = .dropbox,
+        releaseDate: DateComponents
     ) {
         self.contentSourceURL = contentSourceURL
         self.contentType = contentType
+        self.releaseDate = releaseDate
         self.displayMode = .loading
         
         print("[APP:Coordinator] 🎯 Type: \(contentType)")
@@ -57,10 +60,8 @@ internal final class ContentCoordinator: ObservableObject {
             return
         }
         
-        let releaseDate = Calendar.current.date(
-            from: DateComponents(year: 2025, month: 9, day: 4)
-        )
-        if let releaseDate = releaseDate, Date() < releaseDate {
+        let calculatedReleaseDate = Calendar.current.date(from: releaseDate)
+        if let calculatedReleaseDate = calculatedReleaseDate, Date() < calculatedReleaseDate {
             print("[APP:Coordinator] ⏰ Release date in future, activating basic")
             try? await Task.sleep(nanoseconds: 1_500_000_000)
             activateBasicDisplay()
