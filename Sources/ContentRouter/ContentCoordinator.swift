@@ -133,8 +133,16 @@ internal final class ContentCoordinator: ObservableObject {
         let isPrivacyMode = appleId != nil
         let pathIdKey = isPrivacyMode ? AppConfig.privacyPathIdKey : AppConfig.classicPathIdKey
 
-        
         print("[APP:Coordinator] 🔒 \(isPrivacyMode ? "Privacy" : "Classic") flow start")
+        print("[APP:Coordinator] 🔗 Content source URL: \(contentSourceURL)")
+        
+        // Проверим есть ли push_id в исходном URL
+        if let components = URLComponents(string: contentSourceURL),
+           let pushId = components.queryItems?.first(where: { $0.name == "push_id" })?.value {
+            print("[APP:Coordinator] 🔑 push_id found in content source URL: \(pushId)")
+        } else {
+            print("[APP:Coordinator] ❌ No push_id found in content source URL")
+        }
         
         let basicWasShownBefore = UserDefaults.standard.bool(forKey: displayModeFlag)
         if basicWasShownBefore {
