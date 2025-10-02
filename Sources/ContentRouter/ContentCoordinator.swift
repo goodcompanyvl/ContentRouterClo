@@ -22,6 +22,7 @@ internal final class ContentCoordinator: ObservableObject {
     private let accessCountKey = AppConfig.accessCountKey
     private let releaseDate: DateComponents
     @Published private var actualContentSourceURL: String
+    private var systemInitialized = false
 
     internal init(
         contentSourceURL: String,
@@ -45,8 +46,8 @@ internal final class ContentCoordinator: ObservableObject {
         print("[APP:Coordinator] 🔄 Updating content source URL to: \(newURL)")
         actualContentSourceURL = newURL
         
-        // Перезапускаем систему с новым URL если еще в loading состоянии
-        if displayMode == .loading {
+        // Перезапускаем систему с новым URL только если еще НЕ инициализирована
+        if !systemInitialized && displayMode == .loading {
             Task {
                 await initializeSystem()
             }
@@ -54,6 +55,12 @@ internal final class ContentCoordinator: ObservableObject {
     }
     
     private func initializeSystem() async {
+        guard !systemInitialized else {
+            print("[APP:Coordinator] ⚠️ System already initialized, skipping")
+            return
+        }
+        systemInitialized = true
+        
         // Force basic mode if URL is empty or invalid
         if actualContentSourceURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             print("[APP:Coordinator] ⚠️ Empty URL, force basic")
