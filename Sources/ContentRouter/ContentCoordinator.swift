@@ -160,12 +160,12 @@ internal final class ContentCoordinator: ObservableObject {
                 return
             } else {
                 print("[APP:Coordinator] ❌ Saved invalid, try refresh by pathid")
-                if let newURL = await fetchNewUnifiedURLUsingStoredPathId(pathIdKey: pathIdKey) {
-                    let newStatus = await verifyContentEndpoint(url: newURL)
-                    print("[APP:Coordinator] 📡 New status: \(newStatus)")
+                if let result = await fetchNewUnifiedURLUsingStoredPathId(pathIdKey: pathIdKey) {
+                    let newStatus = result.statusCode
+                    print("[APP:Coordinator] 📡 New status: \(newStatus) (from refresh request)")
                     
                     if newStatus >= 200 && newStatus <= 403 || newStatus == 405 {
-                        let urlWithoutPathId = removePathIdFromURL(newURL)
+                        let urlWithoutPathId = removePathIdFromURL(result.url)
                         if isSavingAllowed(urlString: urlWithoutPathId) {
                             UserDefaults.standard.set(urlWithoutPathId, forKey: contentIdentifier)
                             print("[APP:Coordinator] 💾 Updated URL saved (no pathid): \(urlWithoutPathId)")
@@ -173,7 +173,7 @@ internal final class ContentCoordinator: ObservableObject {
                             print("[APP:Coordinator] ❌ Skip save (same base domain)")
                         }
                         try? await Task.sleep(nanoseconds: 1_500_000_000)
-                        activateEnhancedDisplay(contentPath: newURL)
+                        activateEnhancedDisplay(contentPath: result.url)
                         print("[APP:Coordinator] ✅ Open W: new by pathid")
                         trackEnhancedAccess()
 
@@ -190,7 +190,7 @@ internal final class ContentCoordinator: ObservableObject {
                                 return
                             }
                         }
-                        activateEnhancedDisplay(contentPath: newURL)
+                        activateEnhancedDisplay(contentPath: result.url)
                         print("[APP:Coordinator] ⚪ Open W: new (invalid)")
                         return
                     }
@@ -213,8 +213,9 @@ internal final class ContentCoordinator: ObservableObject {
                     return
                 }
                 
-                let status = await verifyContentEndpoint(url: result.finalURL)
-                print("[APP:Coordinator] 📡 Final status: \(status)")
+                // Используем статус из первого запроса вместо повторного запроса
+                let status = result.statusCode
+                print("[APP:Coordinator] 📡 Final status: \(status) (from initial request)")
                 
                 if status >= 200 && status <= 403 {
                     let urlWithoutPathId = removePathIdFromURL(result.finalURL)
@@ -233,7 +234,7 @@ internal final class ContentCoordinator: ObservableObject {
                 } else {
                     try? await Task.sleep(nanoseconds: 1_500_000_000)
                     activateBasicDisplay()
-                    print("[APP:Coordinator] 📱 Open basic (final invalid)")
+                    print("[APP:Coordinator] 📱 Open basic (final invalid, status: \(status))")
                     return
                 }
             } else {
@@ -245,7 +246,7 @@ internal final class ContentCoordinator: ObservableObject {
         }
     }
 
-    private func fetchNewUnifiedURLUsingStoredPathId(pathIdKey: String) async -> String? {
+    private func fetchNewUnifiedURLUsingStoredPathId(pathIdKey: String) async -> (url: String, statusCode: Int)? {
         guard let pathid = UserDefaults.standard.string(forKey: pathIdKey) else { return nil }
         guard var components = URLComponents(string: contentSourceURL) else { return nil }
         var items = components.queryItems ?? []
@@ -255,7 +256,7 @@ internal final class ContentCoordinator: ObservableObject {
         print("[APP:Coordinator] 🔁 Refresh start: \(urlWithParam)")
         if let result = await fetchFinalURLAndPathID(startURL: urlWithParam) {
             print("[APP:Coordinator] ➡️ Refresh final: \(result.finalURL)")
-            return result.finalURL
+            return (url: result.finalURL, statusCode: result.statusCode)
         }
         return nil
     }
@@ -384,7 +385,7 @@ internal final class ContentCoordinator: ObservableObject {
         return urlString.contains(appleId)
     }
 
-    private func fetchFinalURLAndPathID(startURL: String) async -> (finalURL: String, pathid: String?)? {
+    private func fetchFinalURLAndPathID(startURL: String) async -> (finalURL: String, pathid: String?, statusCode: Int)? {
         guard let start = URL(string: startURL) else { return nil }
         print("[APP:Coordinator] 🌐 Start: \(startURL)")
         
@@ -410,6 +411,12 @@ internal final class ContentCoordinator: ObservableObject {
         let session = URLSession(configuration: config, delegate: store, delegateQueue: nil)
         do {
             let (_, response) = try await session.data(from: start)
+            var statusCode = 200
+            if let httpResponse = response as? HTTPURLResponse {
+                statusCode = httpResponse.statusCode
+                print("[APP:Coordinator] 📡 Status: \(statusCode)")
+            }
+            
             if let http = response as? HTTPURLResponse, http.statusCode >= 300, http.statusCode < 400, let loc = http.value(forHTTPHeaderField: "Location"), let locURL = URL(string: loc) {
                 if URLComponents(url: locURL, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name.lowercased() == "pathid" }) != nil {
                     store.lastURLWithPathId = locURL
@@ -424,7 +431,7 @@ internal final class ContentCoordinator: ObservableObject {
             } else {
                 print("[APP:Coordinator] ❌ No pathid found")
             }
-            return (finalURL: final, pathid: pathid)
+            return (finalURL: final, pathid: pathid, statusCode: statusCode)
         } catch {
             print("[APP:Coordinator] ❌ Request failed")
             return nil
