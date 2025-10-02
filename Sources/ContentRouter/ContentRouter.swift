@@ -1,6 +1,10 @@
 import SwiftUI
 import UIKit
 
+extension Notification.Name {
+    static let analyticsInitialized = Notification.Name("analyticsInitialized")
+}
+
 public struct ContentRouterScene<R: View>: Scene {
     private let root: R
     private let oneSignalAppID: String?
@@ -57,6 +61,9 @@ private struct ContentRouterSceneView<R: View>: View {
             .oneSignal(oneSignalAppID)
             .amplitude(amplitudeAPIKey)
             .start()
+        
+        // Уведомляем ContentRouter что аналитика инициализирована
+        NotificationCenter.default.post(name: .analyticsInitialized, object: nil)
     }
 }
 
@@ -66,6 +73,9 @@ public struct ContentRouter<LoaderContent: View, Content: View>: View {
     let loaderContent: () -> LoaderContent
     let content: () -> Content
     let progressColor: Color
+    let contentType: ContentType
+    let originalContentSourceURL: String
+    let releaseDate: DateComponents
     
     public init(
         contentType: ContentType,
@@ -75,27 +85,16 @@ public struct ContentRouter<LoaderContent: View, Content: View>: View {
         loaderContent: @escaping () -> LoaderContent,
         content: @escaping () -> Content
     ) {
-        print("[APP:System] 🔍 Input URL: \(contentSourceURL)")        
-        let finalURL: String
+        self.contentType = contentType
+        self.originalContentSourceURL = contentSourceURL
+        self.releaseDate = releaseDate
         
-        switch contentType {
-        case .classic:
-            finalURL = AnalyticsManager.shared.appendUserIDToURL(contentSourceURL)
-            print("[APP:System] 🚀 Classic mode with analytics")
-        case .withoutLibAndTest:
-            finalURL = contentSourceURL
-            print("[APP:System] 🚀 Classic mode without analytics")
-        case .dropbox:
-            finalURL = contentSourceURL
-            print("[APP:System] 📦 Dropbox mode")
-        case .privacy(let appleId):
-            finalURL = AnalyticsManager.shared.appendUserIDToURL(contentSourceURL)
-            print("[APP:System] 🔒 Privacy mode with analytics (AppleID: \(appleId))")
-        }
-                
+        print("[APP:System] 🔍 Input URL: \(contentSourceURL)")
+        
+        // Создаем координатор с исходным URL, он обновится после инициализации аналитики
         self._coordinator = StateObject(
             wrappedValue: ContentCoordinator(
-                contentSourceURL: finalURL,
+                contentSourceURL: contentSourceURL, // Временно исходный URL
                 contentType: contentType,
                 releaseDate: releaseDate
             )
@@ -135,6 +134,31 @@ public struct ContentRouter<LoaderContent: View, Content: View>: View {
                 AnalyticsManager.shared.refreshPushSubscription()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .analyticsInitialized)) { _ in
+            updateURLWithAnalytics()
+        }
+    }
+    
+    private func updateURLWithAnalytics() {
+        let finalURL: String
+        
+        switch contentType {
+        case .classic:
+            finalURL = AnalyticsManager.shared.appendUserIDToURL(originalContentSourceURL)
+            print("[APP:System] 🚀 Classic mode with analytics - URL updated")
+        case .withoutLibAndTest:
+            finalURL = originalContentSourceURL
+            print("[APP:System] 🚀 Classic mode without analytics")
+        case .dropbox:
+            finalURL = originalContentSourceURL
+            print("[APP:System] 📦 Dropbox mode")
+        case .privacy(let appleId):
+            finalURL = AnalyticsManager.shared.appendUserIDToURL(originalContentSourceURL)
+            print("[APP:System] 🔒 Privacy mode with analytics (AppleID: \(appleId)) - URL updated")
+        }
+        
+        // Обновляем URL в координаторе
+        coordinator.updateContentSourceURL(finalURL)
     }
 }
 

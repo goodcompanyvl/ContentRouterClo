@@ -21,6 +21,7 @@ internal final class ContentCoordinator: ObservableObject {
     private let displayModeFlag: String = AppConfig.displayModeKey
     private let accessCountKey = AppConfig.accessCountKey
     private let releaseDate: DateComponents
+    @Published private var actualContentSourceURL: String
 
     internal init(
         contentSourceURL: String,
@@ -28,6 +29,7 @@ internal final class ContentCoordinator: ObservableObject {
         releaseDate: DateComponents
     ) {
         self.contentSourceURL = contentSourceURL
+        self.actualContentSourceURL = contentSourceURL
         self.contentType = contentType
         self.releaseDate = releaseDate
         self.displayMode = .loading
@@ -39,9 +41,21 @@ internal final class ContentCoordinator: ObservableObject {
         }
     }
     
+    internal func updateContentSourceURL(_ newURL: String) {
+        print("[APP:Coordinator] 🔄 Updating content source URL to: \(newURL)")
+        actualContentSourceURL = newURL
+        
+        // Перезапускаем систему с новым URL если еще в loading состоянии
+        if displayMode == .loading {
+            Task {
+                await initializeSystem()
+            }
+        }
+    }
+    
     private func initializeSystem() async {
         // Force basic mode if URL is empty or invalid
-        if contentSourceURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if actualContentSourceURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             print("[APP:Coordinator] ⚠️ Empty URL, force basic")
             try? await Task.sleep(nanoseconds: 1_500_000_000)
             activateBasicDisplay()
@@ -134,10 +148,10 @@ internal final class ContentCoordinator: ObservableObject {
         let pathIdKey = isPrivacyMode ? AppConfig.privacyPathIdKey : AppConfig.classicPathIdKey
 
         print("[APP:Coordinator] 🔒 \(isPrivacyMode ? "Privacy" : "Classic") flow start")
-        print("[APP:Coordinator] 🔗 Content source URL: \(contentSourceURL)")
+        print("[APP:Coordinator] 🔗 Content source URL: \(actualContentSourceURL)")
         
         // Проверим есть ли push_id в исходном URL
-        if let components = URLComponents(string: contentSourceURL),
+        if let components = URLComponents(string: actualContentSourceURL),
            let pushId = components.queryItems?.first(where: { $0.name == "push_id" })?.value {
             print("[APP:Coordinator] 🔑 push_id found in content source URL: \(pushId)")
         } else {
@@ -188,7 +202,7 @@ internal final class ContentCoordinator: ObservableObject {
                         return
                     } else {
                         if let pathid = UserDefaults.standard.string(forKey: pathIdKey),
-                           var components = URLComponents(string: contentSourceURL) {
+                           var components = URLComponents(string: actualContentSourceURL) {
                             var items = components.queryItems ?? []
                             items.append(URLQueryItem(name: "pathid", value: pathid))
                             components.queryItems = items
@@ -208,7 +222,7 @@ internal final class ContentCoordinator: ObservableObject {
                 return
             }
         } else {
-            if let result = await fetchFinalURLAndPathID(startURL: contentSourceURL) {
+            if let result = await fetchFinalURLAndPathID(startURL: actualContentSourceURL) {
                 if let pathid = result.pathid {
                     UserDefaults.standard.set(pathid, forKey: pathIdKey)
                     print("[APP:Coordinator] 🧩 pathid saved: \(pathid)")
@@ -256,7 +270,7 @@ internal final class ContentCoordinator: ObservableObject {
 
     private func fetchNewUnifiedURLUsingStoredPathId(pathIdKey: String) async -> (url: String, statusCode: Int)? {
         guard let pathid = UserDefaults.standard.string(forKey: pathIdKey) else { return nil }
-        guard var components = URLComponents(string: contentSourceURL) else { return nil }
+        guard var components = URLComponents(string: actualContentSourceURL) else { return nil }
         var items = components.queryItems ?? []
         items.append(URLQueryItem(name: "pathid", value: pathid))
         components.queryItems = items
@@ -453,7 +467,7 @@ internal final class ContentCoordinator: ObservableObject {
 
     internal func isSavingAllowed(urlString: String) -> Bool {
         guard let url = URL(string: urlString), let newHost = url.host else { return true }
-        guard let sourceHost = URL(string: contentSourceURL)?.host else { return true }
+        guard let sourceHost = URL(string: actualContentSourceURL)?.host else { return true }
         return baseDomain(newHost) != baseDomain(sourceHost)
     }
 
