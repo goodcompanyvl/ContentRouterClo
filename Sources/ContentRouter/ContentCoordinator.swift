@@ -387,6 +387,12 @@ internal final class ContentCoordinator: ObservableObject {
     private func fetchFinalURLAndPathID(startURL: String) async -> (finalURL: String, pathid: String?)? {
         guard let start = URL(string: startURL) else { return nil }
         print("[APP:Coordinator] 🌐 Start: \(startURL)")
+        
+        // Показываем есть ли push_id в исходном URL
+        if let components = URLComponents(string: startURL),
+           let pushId = components.queryItems?.first(where: { $0.name == "push_id" })?.value {
+            print("[APP:Coordinator] 🔑 push_id found in start URL: \(pushId)")
+        }
 		class RedirectStore: NSObject, @unchecked Sendable, URLSessionDelegate, URLSessionTaskDelegate {
             var lastURLWithPathId: URL?
             func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
