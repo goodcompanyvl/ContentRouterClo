@@ -22,16 +22,10 @@ internal struct ContentInterface: View {
     public var body: some View {
         VStack(spacing: 0) {
             if isBuffering {
-                GeometryReader { geometry in
-                    Rectangle()
-                        .fill(progressColor)
-                        .frame(
-                            width: geometry.size.width * CGFloat(bufferingProgress),
-                            height: 2
-                        )
-                        .animation(.linear, value: bufferingProgress)
-                }
-                .frame(height: 2)
+                LightningProgressBar(
+                    progress: bufferingProgress,
+                    color: progressColor
+                )
                 .background(Color.black)
             }
             
