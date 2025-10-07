@@ -205,10 +205,14 @@ internal struct ContentRenderer: UIViewRepresentable {
             decidePolicyFor navigationAction: WKNavigationAction,
             decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
         ) {
-            if didTriggerBasicSwitch {
+            // Проверяем это popup окно
+            let isPopup = (webView == popupWebView)
+            
+            if didTriggerBasicSwitch && !isPopup {
                 decisionHandler(.cancel)
                 return
             }
+            
             if let url = navigationAction.request.url {
                 let scheme = url.scheme?.lowercased()
                 let urlString = url.absoluteString.lowercased()
@@ -334,6 +338,7 @@ internal struct ContentRenderer: UIViewRepresentable {
                      windowFeatures: WKWindowFeatures) -> WKWebView? {
             let urlString = navigationAction.request.url?.absoluteString ?? "N/A"
             
+            // Если это App Store ссылка - открываем в системном браузере
             if urlString.lowercased().contains("apps.apple.com") || urlString.lowercased().contains("itunes.apple.com") {
                 if let url = navigationAction.request.url {
                     DispatchQueue.main.async {
@@ -346,6 +351,16 @@ internal struct ContentRenderer: UIViewRepresentable {
             
             let isNewWindowRequest = navigationAction.targetFrame == nil
             let isPaymentPopup = isNewWindowRequest
+            
+            // Если это запрос из popup окна (например, OAuth) - загружаем в том же popup
+            let isPopup = (webView == popupWebView)
+            if isPopup {
+                print("[APP:W] 🔄 Popup redirect: \(urlString)")
+                if let url = navigationAction.request.url {
+                    webView.load(navigationAction.request)
+                }
+                return nil
+            }
             
             if isPaymentPopup {
                 if let existingPopup = popupWebView {
