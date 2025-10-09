@@ -79,12 +79,17 @@ public final class AnalyticsManager {
         oneSignalInitialized = true
         print("[APP:AnalyticsManager] ✅ OneSignal successfully loaded")
         
-        if appLaunchCount <= 3 {
+        if appLaunchCount == 1 || appLaunchCount == 3 || appLaunchCount == 6 {
             print("[APP:AnalyticsManager] Requesting push notification permissions (launch #\(appLaunchCount))")
-            OneSignal.Notifications.requestPermission({ accepted in
-                print("[APP:AnalyticsManager] User accepted notifications: \(accepted)")
-            }, fallbackToSettings: true)
-            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                OneSignal.Notifications.requestPermission({ accepted in
+                    print("[APP:AnalyticsManager] User accepted notifications: \(accepted)")
+                }, fallbackToSettings: true)
+                
+                print("[APP:AnalyticsManager] Logging into OneSignal with userID: \(self.userID)")
+                OneSignal.login(self.userID)
+            }
+        } else if appLaunchCount <= 6 {
             print("[APP:AnalyticsManager] Logging into OneSignal with userID: \(userID)")
             OneSignal.login(userID)
         }
