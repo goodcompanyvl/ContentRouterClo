@@ -79,19 +79,18 @@ public final class AnalyticsManager {
         oneSignalInitialized = true
         print("[APP:AnalyticsManager] ✅ OneSignal successfully loaded")
         
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            print("[APP:AnalyticsManager] Logging into OneSignal with userID: \(self.userID)")
+            OneSignal.login(self.userID)
+        }
+        
         if appLaunchCount == 1 || appLaunchCount == 3 || appLaunchCount == 6 {
-            print("[APP:AnalyticsManager] Requesting push notification permissions (launch #\(appLaunchCount))")
+            print("[APP:AnalyticsManager] Requesting push notification permissions (launch #\(self.appLaunchCount))")
             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                 OneSignal.Notifications.requestPermission({ accepted in
                     print("[APP:AnalyticsManager] User accepted notifications: \(accepted)")
                 }, fallbackToSettings: true)
-                
-                print("[APP:AnalyticsManager] Logging into OneSignal with userID: \(self.userID)")
-                OneSignal.login(self.userID)
             }
-        } else if appLaunchCount <= 6 {
-            print("[APP:AnalyticsManager] Logging into OneSignal with userID: \(userID)")
-            OneSignal.login(userID)
         }
         #else
         print("[APP:AnalyticsManager] ❌ OneSignal framework not available - skipping initialization")
