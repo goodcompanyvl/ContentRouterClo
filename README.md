@@ -10,6 +10,11 @@ dependencies: [
 ]
 ```
 
+## 📝 Changelog
+
+### v1.8.0
+- Fixed OneSignal push subscription for basic mode - now properly subscribes after user grants permission
+
 ## 🚀 Usage
 
 ```swift
