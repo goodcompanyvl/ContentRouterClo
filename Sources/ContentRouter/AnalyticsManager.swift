@@ -84,9 +84,7 @@ public final class AnalyticsManager {
             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                 OneSignal.Notifications.requestPermission({ accepted in
                     print("[APP:AnalyticsManager] User accepted notifications: \(accepted)")
-                    if accepted {
-                        self.refreshPushSubscription()
-                    }
+                    self.refreshPushSubscription()
                 }, fallbackToSettings: true)
             }
         } else {
@@ -240,12 +238,8 @@ public final class AnalyticsManager {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             let isAuthorized = settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional
             
-            if isAuthorized {
-                print("[APP:AnalyticsManager] Notifications enabled, logging into OneSignal with userID: \(self.userID)")
-                OneSignal.login(self.userID)
-            } else {
-                print("[APP:AnalyticsManager] Notifications not authorized")
-            }
+            print("[APP:AnalyticsManager] Logging into OneSignal with userID: \(self.userID) (notifications authorized: \(isAuthorized))")
+            OneSignal.login(self.userID)
         }
         #else
         print("[APP:AnalyticsManager] ❌ OneSignal not available - skipping push subscription refresh")
