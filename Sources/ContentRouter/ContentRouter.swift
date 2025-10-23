@@ -120,12 +120,17 @@ public struct ContentRouter<LoaderContent: View, Content: View>: View {
                     }
                 
             case .enhanced(let contentURL):
-                ContentInterface(contentURL: contentURL, contentCoordinator: coordinator, progressColor: progressColor)
+				ContentInterface(
+					contentURL: contentURL,
+					contentCoordinator: coordinator,
+					progressColor: progressColor
+				)
                     .transition(.opacity)
                     .onAppear {
                         AnalyticsManager.shared.trackEvent(.wVLaunch)
                         print("[APP:System] ✅ Open W: \(contentURL)")
                     }
+					.ignoresSafeArea(.keyboard)
             }
         }
         .animation(.easeInOut, value: coordinator.displayMode)

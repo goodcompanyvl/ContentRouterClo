@@ -47,7 +47,7 @@ internal struct ContentRenderer: UIViewRepresentable {
         enginePrefs.preferredContentMode = .mobile
         engineConfig.defaultWebpagePreferences = enginePrefs
         engineConfig.allowsInlineMediaPlayback = true
-        engineConfig.mediaTypesRequiringUserActionForPlayback = []
+		engineConfig.mediaTypesRequiringUserActionForPlayback = [.all]
         engineConfig.allowsAirPlayForMediaPlayback = true
         engineConfig.allowsPictureInPictureMediaPlayback = true
         engineConfig.preferences.javaScriptCanOpenWindowsAutomatically = true

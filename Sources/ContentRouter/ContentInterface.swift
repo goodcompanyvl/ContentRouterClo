@@ -13,22 +13,18 @@ internal struct ContentInterface: View {
     @State private var bufferingProgress: Double = 0
     @State private var webKitCanGoBack = false
     
-    internal init(contentURL: String, contentCoordinator: ContentCoordinator? = nil, progressColor: Color) {
+	internal init(
+		contentURL: String,
+		contentCoordinator: ContentCoordinator? = nil,
+		progressColor: Color
+	) {
         self.contentURL = contentURL
         self.contentCoordinator = contentCoordinator
         self.progressColor = progressColor
     }
     
     public var body: some View {
-        VStack(spacing: 0) {
-            if isBuffering {
-                LightningProgressBar(
-                    progress: bufferingProgress,
-                    color: progressColor
-                )
-                .background(Color.black)
-            }
-            
+		ZStack(alignment: .top) {
             ContentRenderer(
                 contentSourceURL: contentURL,
                 contentRenderer: $contentRenderer,
@@ -37,11 +33,20 @@ internal struct ContentInterface: View {
                 webKitCanGoBack: $webKitCanGoBack,
                 enableGestureControl: true,
                 enablePullToRefresh: true,
-                contentType: contentCoordinator?.contentType ?? .dropbox,
+                contentType: contentCoordinator?.contentType ?? .classic,
                 contentCoordinator: contentCoordinator,
                 progressColor: progressColor
             )
+
+			if isBuffering {
+				LightningProgressBar(
+					progress: bufferingProgress,
+					color: progressColor
+				)
+				.background(Color.black)
+			}
         }
         .preferredColorScheme(.dark)
+		.ignoresSafeArea(.keyboard)
     }
 } 
