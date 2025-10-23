@@ -47,7 +47,7 @@ internal struct ContentRenderer: UIViewRepresentable {
         enginePrefs.preferredContentMode = .mobile
         engineConfig.defaultWebpagePreferences = enginePrefs
         engineConfig.allowsInlineMediaPlayback = true
-		engineConfig.mediaTypesRequiringUserActionForPlayback = [.all]
+        engineConfig.mediaTypesRequiringUserActionForPlayback = [.all]
         engineConfig.allowsAirPlayForMediaPlayback = true
         engineConfig.allowsPictureInPictureMediaPlayback = true
         engineConfig.preferences.javaScriptCanOpenWindowsAutomatically = true
@@ -73,38 +73,33 @@ internal struct ContentRenderer: UIViewRepresentable {
             print("[APP:W] 💾 Saved URL: \(savedURL)")
         }
         
+        DispatchQueue.main.async {
+            self.contentRenderer = contentView
+        }
+        
+        DispatchQueue.main.async {
+            if contentView.url == nil {
+                if self.contentSourceURL == "about:blank" {
+                    contentView.loadHTMLString("", baseURL: nil)
+                } else if let contentURL = URL(string: self.contentSourceURL) {
+                    var contentRequest = URLRequest(
+                        url: contentURL,
+                        cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
+                        timeoutInterval: AppConfig.networkTimeoutInterval
+                    )
+                    contentRequest.setValue(
+                        AppConfig.securityEngineBrowserAgent,
+                        forHTTPHeaderField: "User-Agent"
+                    )
+                    contentView.load(contentRequest)
+                }
+            }
+        }
+        
         return contentView
     }
     
     internal func updateUIView(_ uiView: WKWebView, context: Context) {
-        DispatchQueue.main.async {
-            self.contentRenderer = uiView
-        }
-        
-        if uiView.allowsBackForwardNavigationGestures != enableGestureControl {
-            uiView.allowsBackForwardNavigationGestures = enableGestureControl
-        }
-        
-        context.coordinator.updatePullToRefresh(contentView: uiView, enabled: enablePullToRefresh)
-        
-        if uiView.url == nil {
-            if contentSourceURL == "about:blank" {
-                uiView.loadHTMLString("", baseURL: nil)
-                return
-            }
-            if let contentURL = URL(string: contentSourceURL) {
-                var contentRequest = URLRequest(
-                    url: contentURL,
-                    cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
-                    timeoutInterval: AppConfig.networkTimeoutInterval
-                )
-                contentRequest.setValue(
-                    AppConfig.securityEngineBrowserAgent,
-                    forHTTPHeaderField: "User-Agent"
-                )
-                uiView.load(contentRequest)
-            }
-        }
     }
     
     internal func makeCoordinator() -> Coordinator {

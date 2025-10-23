@@ -6,11 +6,14 @@ A powerful SwiftUI framework for intelligent content routing with built-in analy
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/goodcompanyvl/ContentRouterClo.git", from: "2.0.0")
+    .package(url: "https://github.com/goodcompanyvl/ContentRouterClo.git", from: "2.0.1")
 ]
 ```
 
 ## 📝 Changelog
+
+### v2.0.1
+- Optimized UIViewRepresentable lifecycle - moved all initialization logic to makeUIView
 
 ### v2.0.0
 - Fixed keyboard viewport jump - disabled automatic content inset adjustments
