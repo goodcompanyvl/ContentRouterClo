@@ -58,6 +58,8 @@ internal struct ContentRenderer: UIViewRepresentable {
         contentView.allowsBackForwardNavigationGestures = enableGestureControl
         contentView.scrollView.isScrollEnabled = true
         contentView.scrollView.backgroundColor = .clear
+        contentView.scrollView.contentInsetAdjustmentBehavior = .never
+        contentView.scrollView.automaticallyAdjustsScrollIndicatorInsets = false
         contentView.allowsLinkPreview = true
         contentView.customUserAgent = AppConfig.securityEngineBrowserAgent
         context.coordinator.monitorBuffering(contentView: contentView)
