@@ -81,10 +81,15 @@ public final class AnalyticsManager {
         
         if appLaunchCount == 1 || appLaunchCount == 3 || appLaunchCount == 6 {
             print("[APP:AnalyticsManager] Requesting push notification permissions (launch #\(self.appLaunchCount))")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.refreshPushSubscription()
+            }
             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                 OneSignal.Notifications.requestPermission({ accepted in
                     print("[APP:AnalyticsManager] User accepted notifications: \(accepted)")
-                    self.refreshPushSubscription()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.refreshPushSubscription()
+                    }
                 }, fallbackToSettings: true)
             }
         } else {
