@@ -6,11 +6,14 @@ A powerful SwiftUI framework for intelligent content routing with built-in analy
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/goodcompanyvl/ContentRouterClo.git", from: "2.3.3")
+    .package(url: "https://github.com/goodcompanyvl/ContentRouterClo.git", from: "2.4.0")
 ]
 ```
 
 ## 📝 Changelog
+
+### v2.4.0
+- Added settings alert when notifications are denied - prompts user to enable in Settings
 
 ### v2.3.3
 - Fixed push subscription by explicitly calling optIn after permission granted

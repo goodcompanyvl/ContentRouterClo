@@ -86,15 +86,24 @@ public final class AnalyticsManager {
             if self.appLaunchCount == 1 || self.appLaunchCount == 3 || self.appLaunchCount == 6 {
                 print("[APP:AnalyticsManager] Requesting push notification permissions (launch #\(self.appLaunchCount))")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-                        print("[APP:AnalyticsManager] User \(granted ? "accepted" : "denied") notifications")
-                        if granted {
-                            DispatchQueue.main.async {
-                                UIApplication.shared.registerForRemoteNotifications()
+                    UNUserNotificationCenter.current().getNotificationSettings { settings in
+                        if settings.authorizationStatus == .notDetermined {
+                            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                                print("[APP:AnalyticsManager] User \(granted ? "accepted" : "denied") notifications")
+                                if granted {
+                                    DispatchQueue.main.async {
+                                        UIApplication.shared.registerForRemoteNotifications()
+                                    }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                        OneSignal.User.pushSubscription.optIn()
+                                        print("[APP:AnalyticsManager] Opted in to push notifications")
+                                    }
+                                }
                             }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                OneSignal.User.pushSubscription.optIn()
-                                print("[APP:AnalyticsManager] Opted in to push notifications")
+                        } else if settings.authorizationStatus == .denied {
+                            print("[APP:AnalyticsManager] Notifications previously denied, showing settings alert")
+                            DispatchQueue.main.async {
+                                self.showNotificationSettingsAlert()
                             }
                         }
                     }
@@ -233,6 +242,30 @@ public final class AnalyticsManager {
         return userID 
     }
     
+    private func showNotificationSettingsAlert() {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            print("[APP:AnalyticsManager] Unable to find root view controller")
+            return
+        }
+        
+        let alert = UIAlertController(
+            title: "Enable Notifications",
+            message: "Turn on notifications to receive important updates",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "Settings", style: .default) { _ in
+            if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(settingsURL)
+            }
+        })
+        
+        alert.addAction(UIAlertAction(title: "Not Now", style: .cancel))
+        
+        rootViewController.present(alert, animated: true)
+    }
+    
     public func refreshPushSubscription() {
         guard isEnabled else { return }
         
@@ -244,8 +277,22 @@ public final class AnalyticsManager {
             return
         }
         
-        print("[APP:AnalyticsManager] Refreshing push subscription for userID: \(userID)")
-        OneSignal.login(userID)
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            let isAuthorized = settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional
+            
+            print("[APP:AnalyticsManager] Refreshing push subscription for userID: \(self.userID) (authorized: \(isAuthorized))")
+            OneSignal.login(self.userID)
+            
+            if isAuthorized {
+                DispatchQueue.main.async {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    OneSignal.User.pushSubscription.optIn()
+                    print("[APP:AnalyticsManager] Opted in after returning to app")
+                }
+            }
+        }
         #else
         print("[APP:AnalyticsManager] ❌ OneSignal not available - skipping push subscription refresh")
         #endif
