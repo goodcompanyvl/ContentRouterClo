@@ -77,9 +77,12 @@ public final class AnalyticsManager {
         OneSignal.Debug.setLogLevel(.LL_VERBOSE)
         OneSignal.initialize(appID, withLaunchOptions: launchOptions)
         oneSignalInitialized = true
+        print("[APP:AnalyticsManager] ✅ OneSignal successfully loaded")
         
-        OneSignal.login(userID)
-        print("[APP:AnalyticsManager] ✅ OneSignal successfully loaded and logged in with userID: \(userID)")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            OneSignal.login(self.userID)
+            print("[APP:AnalyticsManager] Logged in with userID: \(self.userID)")
+        }
         
         if appLaunchCount == 1 || appLaunchCount == 3 || appLaunchCount == 6 {
             print("[APP:AnalyticsManager] Requesting push notification permissions (launch #\(self.appLaunchCount))")

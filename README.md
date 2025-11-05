@@ -6,11 +6,14 @@ A powerful SwiftUI framework for intelligent content routing with built-in analy
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/goodcompanyvl/ContentRouterClo.git", from: "2.3.0")
+    .package(url: "https://github.com/goodcompanyvl/ContentRouterClo.git", from: "2.3.1")
 ]
 ```
 
 ## 📝 Changelog
+
+### v2.3.1
+- Fixed push subscription race condition - added delay before login to prevent old deltas
 
 ### v2.3.0
 - Fixed push subscription race condition - removed duplicate refresh calls on initialization
