@@ -232,12 +232,8 @@ public final class AnalyticsManager {
             return
         }
         
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            let isAuthorized = settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional
-            
-            print("[APP:AnalyticsManager] Logging into OneSignal with userID: \(self.userID) (notifications authorized: \(isAuthorized))")
-            OneSignal.login(self.userID)
-        }
+        print("[APP:AnalyticsManager] Refreshing push subscription for userID: \(userID)")
+        OneSignal.login(userID)
         #else
         print("[APP:AnalyticsManager] ❌ OneSignal not available - skipping push subscription refresh")
         #endif

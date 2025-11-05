@@ -48,7 +48,7 @@ private struct ContentRouterSceneView<R: View>: View {
                 }
             }
             .onChange(of: scenePhase) { newPhase in
-                if newPhase == .active {
+                if newPhase == .active && hasInitialized {
                     AnalyticsManager.shared.refreshPushSubscription()
                 }
             }
@@ -134,11 +134,6 @@ public struct ContentRouter<LoaderContent: View, Content: View>: View {
             }
         }
         .animation(.easeInOut, value: coordinator.displayMode)
-        .onChange(of: scenePhase) { newPhase in
-            if newPhase == .active {
-                AnalyticsManager.shared.refreshPushSubscription()
-            }
-        }
         .onReceive(NotificationCenter.default.publisher(for: .analyticsInitialized)) { _ in
             updateURLWithAnalytics()
         }
