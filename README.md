@@ -6,11 +6,14 @@ A powerful SwiftUI framework for intelligent content routing with built-in analy
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/goodcompanyvl/ContentRouterClo.git", from: "2.1.1")
+    .package(url: "https://github.com/goodcompanyvl/ContentRouterClo.git", from: "2.2.0")
 ]
 ```
 
 ## 📝 Changelog
+
+### v2.2.0
+- Fixed OneSignal push subscription reliability - login immediately after initialization
 
 ### v2.1.1
 - Fixed push notifications in basic mode - login to OneSignal before showing permission dialog
