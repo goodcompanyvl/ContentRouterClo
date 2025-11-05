@@ -92,6 +92,10 @@ public final class AnalyticsManager {
                             DispatchQueue.main.async {
                                 UIApplication.shared.registerForRemoteNotifications()
                             }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                OneSignal.User.pushSubscription.optIn()
+                                print("[APP:AnalyticsManager] Opted in to push notifications")
+                            }
                         }
                     }
                 }
