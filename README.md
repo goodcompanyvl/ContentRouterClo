@@ -6,11 +6,14 @@ A powerful SwiftUI framework for intelligent content routing with built-in analy
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/goodcompanyvl/ContentRouterClo.git", from: "2.4.0")
+    .package(url: "https://github.com/goodcompanyvl/ContentRouterClo.git", from: "2.5.0")
 ]
 ```
 
 ## 📝 Changelog
+
+### v2.5.0
+- Added Bundle extension to read release date from Info.plist
 
 ### v2.4.0
 - Added settings alert when notifications are denied - prompts user to enable in Settings
@@ -48,25 +51,46 @@ dependencies: [
 
 ## 🚀 Usage
 
-```swift
-		ContentRouterScene(
-			oneSignalAppID: "",
-			amplitudeAPIKey: "",
-			root: {
-				ContentRouter(
-					contentType: .classic,
-					contentSourceURL: "",
-					releaseDate: DateComponents(year: 2025, month: 9, day: 30),
-					progressColor: Theme.primary,
-					loaderContent: {
-						SplashView()
-					},
-					content: {
+### Basic Usage
 
-					}
-				)
+```swift
+ContentRouterScene(
+	oneSignalAppID: "",
+	amplitudeAPIKey: "",
+	root: {
+		ContentRouter(
+			contentType: .classic,
+			contentSourceURL: "",
+			releaseDate: Bundle.main.releaseDate,
+			progressColor: Theme.primary,
+			loaderContent: {
+				SplashView()
+			},
+			content: {
+
 			}
 		)
+	}
+)
+```
+
+### Release Date Configuration
+
+Add these keys to your app's `Info.plist`:
+
+```xml
+<key>ReleaseYear</key>
+<integer>2025</integer>
+<key>ReleaseMonth</key>
+<integer>11</integer>
+<key>ReleaseDay</key>
+<integer>9</integer>
+```
+
+Then use `Bundle.main.releaseDate` instead of hardcoding dates:
+
+```swift
+releaseDate: Bundle.main.releaseDate
 ```
 
 ## ✨ Features
